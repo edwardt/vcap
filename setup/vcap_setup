@@ -11,6 +11,9 @@ E_BAD_INPUT=85          # Bad input value
 SUCCESS=0
 FAILURE=-1
 
+OS='Unknown'
+REV=-1
+
 usage() {
 cat <<EOF
 usage: $0 options
@@ -33,13 +36,20 @@ fi
 
 probe_platform() {
 OS=`uname -s`
-if [[ $OS == 'Linux' ]]; then
+if [[ '${OS}' == 'Linux' ]]; then
     PLATFORM='Linux'
 elif [[ $OS == 'Darwin' ]]; then
     PLATFORM='MacOSX'
 else
     echo "Unknown System, cancelling setup"
     exit 1
+fi
+}
+
+probe_linux_variant() {
+if
+
+
 fi
 }
 
