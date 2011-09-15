@@ -1,6 +1,15 @@
 #!/bin/bash
+#!
 # Copyright (c) 2009-2011 VMware, Inc.
 # Try to detect platform. VCAP installs well on Ubuntu and MacOS X Systems.
+
+# Useful variable definitions
+
+ROOT_UID=0             # Root has $UID 0.
+E_NOT_ROOT=101         # Not root user error.
+E_BAD_INPUT=85          # Bad input value
+SUCCESS=0
+FAILURE=-1
 
 usage() {
 cat <<EOF
@@ -13,6 +22,31 @@ OPTIONS:
   -p PASSWORD  Preseed the MySQL password
   -q PASSWORD  Preseed the PostgreSQL password
 EOF
+}
+
+check_root_user() {
+if [ "$(id -u)" != "$ROOT_UID" ]; then
+    echo '** Setup must be run as root **'
+    exit $E_NOT_ROOT
+fi
+}
+
+probe_platform() {
+OS=`uname -s`
+if [[ $OS == 'Linux' ]]; then
+    PLATFORM='Linux'
+elif [[ $OS == 'Darwin' ]]; then
+    PLATFORM='MacOSX'
+else
+    echo "Unknown System, cancelling setup"
+    exit 1
+fi
+}
+
+install_common_lib() {
+if [[ $PLATFORM == 'Linux' ]]; then
+    apt-get install -qqy wget curl libcurl3 libcurl3-dev bison build-essential zlib1g-dev libssl-dev libreadline5-dev libxml2 libxml2-dev libxslt1.1 libxslt1-dev git-core sqlite3 libsqlite3-ruby libsqlite3-dev unzip zip libcurl4-openssl-dev
+fi
 }
 
 while getopts "hasp:q:" OPTION
@@ -38,14 +72,7 @@ do
 done
 
 OS=`uname -s`
-if [[ $OS == 'Linux' ]]; then
-    PLATFORM='Linux'
-elif [[ $OS == 'Darwin' ]]; then
-    PLATFORM='MacOSX'
-else
-    echo "Unknown System, cancelling setup"
-    exit 1
-fi
+probe_platform
 
 echo ""
 echo '-----------------------------------------------------------'
@@ -53,16 +80,7 @@ echo "($PLATFORM) Setup for VMware's Cloud Application Platform!"
 echo '-----------------------------------------------------------'
 echo ""
 
-
-if [[ $ALL != true ]]; then
-  echo "Just hit <enter> to skip any item"
-  echo ""
-fi
-
-if [ "$(id -u)" != "0" ]; then
-    echo '** Setup must be run as root **'
-    exit 1
-fi
+check_root_user
 
 if [[ $ALL != true ]]; then
   read -p "Setup all components? default: individual components? [y/N]"
@@ -74,9 +92,7 @@ fi
 # Defaults, done for everyone
 
 echo "Installing default packages"
-if [[ $PLATFORM == 'Linux' ]]; then
-    apt-get install -qqy wget curl libcurl3 libcurl3-dev bison build-essential zlib1g-dev libssl-dev libreadline5-dev libxml2 libxml2-dev libxslt1.1 libxslt1-dev git-core sqlite3 libsqlite3-ruby libsqlite3-dev unzip zip libcurl4-openssl-dev
-fi
+install_common_lib
 
 if [[ $PLATFORM == 'Linux' ]]; then
     # Probably should make this something different instead of apt_get
@@ -555,5 +571,6 @@ echo -e "\nGem List"
 gem list --local
 
 echo -e "\n\nBYE!\n\n"
+
 
 
