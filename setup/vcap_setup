@@ -4,15 +4,13 @@
 # Try to detect platform. VCAP installs well on Ubuntu and MacOS X Systems.
 
 # Useful variable definitions
-
+#set -o nounset
 ROOT_UID=0             # Root has $UID 0.
 E_NOT_ROOT=101         # Not root user error.
-E_BAD_INPUT=85          # Bad input value
+E_BAD_INPUT=85         # Bad input value
 SUCCESS=0
 FAILURE=-1
-
-OS='Unknown'
-REV=-1
+#ALL=false	       # Default not to do install all components
 
 usage() {
 cat <<EOF
@@ -36,24 +34,18 @@ fi
 
 probe_platform() {
 OS=`uname -s`
-if [[ '${OS}' == 'Linux' ]]; then
-    PLATFORM='Linux'
+if [[ $OS == 'Linux' ]]; then
+    return 'Linux'
 elif [[ $OS == 'Darwin' ]]; then
-    PLATFORM='MacOSX'
+    return 'MacOSX'
 else
     echo "Unknown System, cancelling setup"
     exit 1
 fi
 }
 
-probe_linux_variant() {
-if
-
-
-fi
-}
-
 install_common_lib() {
+local PLATFORM="$1"
 if [[ $PLATFORM == 'Linux' ]]; then
     apt-get install -qqy wget curl libcurl3 libcurl3-dev bison build-essential zlib1g-dev libssl-dev libreadline5-dev libxml2 libxml2-dev libxslt1.1 libxslt1-dev git-core sqlite3 libsqlite3-ruby libsqlite3-dev unzip zip libcurl4-openssl-dev
 fi
@@ -62,27 +54,31 @@ fi
 while getopts "hasp:q:" OPTION
 do
   case $OPTION in
-    h)
+    h|--help)
       usage
       exit 1
       ;;
-    a)
+    a|--all)
       ALL=true
       ;;
-    s)
+    s|--allservices)
       ALL_SERVICES=true
       ;;
-    p)
+    p|--mysqlpass)
       MYSQL_PASS="$OPTARG"
       ;;
-    q)
+    q|--psqlpass)
       POSTGRESQL_PASS="$OPTARG"
       ;;
+    --)
+     usage
+     exit 1
+     ;;
   esac
 done
 
 OS=`uname -s`
-probe_platform
+PLATFORM=probe_platform
 
 echo ""
 echo '-----------------------------------------------------------'
@@ -102,7 +98,7 @@ fi
 # Defaults, done for everyone
 
 echo "Installing default packages"
-install_common_lib
+install_common_lib $PLATFORM
 
 if [[ $PLATFORM == 'Linux' ]]; then
     # Probably should make this something different instead of apt_get
