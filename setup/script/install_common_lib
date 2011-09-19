@@ -1,0 +1,11 @@
+# install common library dependency per platform 
+
+install_common_lib() {
+local PLATFORM="$1"
+if [[ $PLATFORM == 'Linux' ]]; then
+    echo "Installing common libraries ...."
+    apt-get install -qqy wget curl libcurl3 libcurl3-dev bison build-essential zlib1g-dev libssl-dev libreadline5-dev libxml2 libxml2-dev libxslt1.1 libxslt1-dev git-core sqlite3 libsqlite3-ruby libsqlite3-dev unzip zip libcurl4-openssl-dev
+fi
+}
+
+echo "Imported Install Common Libraries"

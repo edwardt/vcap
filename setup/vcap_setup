@@ -5,7 +5,9 @@
 
 # Useful variable definitions
 set -o nounset
-import "./script/error_code"
+BASESCRIPT_DIR=$(dirname $0)
+. "$BASESCRIPT_DIR/script/error_code"
+. "$BASESCRIPT_DIR/script/install_common_lib"
 
 ROOT_UID=0             # Root has $UID 0.
 ALL=false	       # Default not to do install all components
@@ -43,12 +45,6 @@ else
 fi
 }
 
-install_common_lib() {
-local PLATFORM="$1"
-if [[ $PLATFORM == 'Linux' ]]; then
-    apt-get install -qqy wget curl libcurl3 libcurl3-dev bison build-essential zlib1g-dev libssl-dev libreadline5-dev libxml2 libxml2-dev libxslt1.1 libxslt1-dev git-core sqlite3 libsqlite3-ruby libsqlite3-dev unzip zip libcurl4-openssl-dev
-fi
-}
 
 while getopts "hasp:q:" OPTION
 do
