@@ -1,0 +1,16 @@
+#!/bin/bash
+# Try to detect platforms and set the appropriate platform dependency
+
+probe_platform() {
+	echo -n "Checking operating system..."
+	OS=`uname -s`
+	if [ "${OS}" != "Linux" ] ; then
+	   echo "non-Linux."
+	   echo ""
+	   echo "Error: This installer is designed for Linux based operating systems."
+	   exit 1
+	fi
+	if [ -f /etc/debian_version ]; then
+	   REV=`cat /etc/debian_version`
+
+}
