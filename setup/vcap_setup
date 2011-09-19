@@ -4,13 +4,14 @@
 # Try to detect platform. VCAP installs well on Ubuntu and MacOS X Systems.
 
 # Useful variable definitions
-#set -o nounset
+set -o nounset
 ROOT_UID=0             # Root has $UID 0.
 E_NOT_ROOT=101         # Not root user error.
 E_BAD_INPUT=85         # Bad input value
 SUCCESS=0
 FAILURE=-1
-#ALL=false	       # Default not to do install all components
+ALL=false	       # Default not to do install all components
+ALL_SERVICES=false     # Default not to install all services
 
 usage() {
 cat <<EOF
@@ -88,6 +89,8 @@ echo ""
 
 check_root_user
 
+echo "ALL is $ALL"
+
 if [[ $ALL != true ]]; then
   read -p "Setup all components? default: individual components? [y/N]"
   if [[ $REPLY =~ ^[yY]$ ]]; then
@@ -148,6 +151,7 @@ fi
 #######################################################################
 
 # Router
+ROUTER=false
 if [[ $ALL != true ]]; then
     echo ""
     read -p "Should I do a Router setup? [y/N] "
@@ -168,6 +172,7 @@ if [[ $ROUTER == true || $ALL == true ]]; then
 fi
 
 # CloudController
+CC=false
 if [[ $ALL != true ]]; then
     read -p "Should I do a CloudController setup? [y/N] "
     if [[ $REPLY =~ ^[yY]$ ]]; then
@@ -175,6 +180,7 @@ if [[ $ALL != true ]]; then
     fi
 fi
 
+RELATIONAL_DBS=false
 if [[ $CC == true || $ALL == true ]]; then
     if [[ $PLATFORM == 'Linux' ]]; then
         if [[ $ALL != true ]]; then
@@ -213,6 +219,7 @@ if [[ $CC == true || $ALL == true ]]; then
 fi
 
 # DEA
+DEA=false
 if [[ $ALL != true ]]; then
     read -p "Should I do a DEA setup (Java, Ruby, Node, etc)? [y/N] "
     if [[ $REPLY =~ ^[yY]$ ]]; then
@@ -238,6 +245,7 @@ if [[ $DEA == true || $ALL == true ]]; then
     fi
 
     # Java
+    JAVA=''
     if [[ $PLATFORM == 'Linux' ]]; then
         JAVA=`dpkg --get-selections | grep sun-java6`
         echo $JAVA
@@ -406,6 +414,7 @@ echo "Additional Optional Services"
 # if you answered no to the production setup
 # question than you should answer yes here for sure
 X=`which mysqld`
+MYSQL=false
 if [ $? != 0 ]; then
     if [[ $ALL_SERVICES != true ]]; then
         read -p "Should I add MySQL Server? [y/N] "
@@ -428,6 +437,7 @@ if [ $? != 0 ]; then
     fi
 fi
 
+POSTGRESQL=false
 X=`which psql`
 if [ $? != 0 ]; then
     if [[ $ALL_SERVICES != true ]]; then
@@ -451,7 +461,7 @@ if [ $? != 0 ]; then
 fi
 
 REDIS_VERSION=2.2.4
-
+REDIS=false
 redis_current=`redis-server -v | grep $REDIS_VERSION`
 
 if [[ $ALL_SERVICES != true ]]; then
@@ -482,7 +492,7 @@ fi
 
 RABBITMQ_VERSION=2.4.0
 RABBITMQ_VERSION_FULL=2.4.0-1_all
-
+RABBITMQ=false
 if [[ $ALL_SERVICES != true ]]; then
     read -p "Should I add RabbitMQ Server? [y/N] "
     if [[ $REPLY =~ ^[yY]$ ]]; then
@@ -504,7 +514,7 @@ fi
 MONGODB_VERSION=1.8.1
 
 mongodb_current=`mongod --version | grep $MONGODB_VERSION`
-
+MONGODB=false
 if [[ -z "$mongodb_current" ]]; then
     if [[ $ALL_SERVICES != true ]]; then
         read -p "Should I add the MongoDB Server? [y/N] "
@@ -536,6 +546,7 @@ else
     echo "MongoDB Server (version $MONGODB_VERSION) is current"
 fi
 
+NEO4J=false
 if [[ $ALL_SERVICES != true ]]; then
     read -p "Should I add Neo4j Server? [y/N] "
     if [[ $REPLY =~ ^[yY]$ ]]; then
